@@ -12,7 +12,6 @@ const copy = {
     pause: '暫停',
     play: '播放',
     speed: '公轉速度',
-    backToEarth: '回到地球',
     stage: '可點選的太陽系模型',
     scene: '立體太陽系模型',
     scaleNote: '拖曳可旋轉視角，滾輪可縮放。示意比例經過調整，方便觀察行星與軌道。',
@@ -42,7 +41,6 @@ const copy = {
     pause: 'Pause',
     play: 'Play',
     speed: 'Orbital speed',
-    backToEarth: 'Back to Earth',
     stage: 'Clickable solar system model',
     scene: '3D solar system model',
     scaleNote:
@@ -80,7 +78,7 @@ function App() {
   const [selectedId, setSelectedId] = useState('earth')
   const [isPlaying, setIsPlaying] = useState(true)
   const [speed, setSpeed] = useState(0.35)
-  const [language, setLanguage] = useState('zh')
+  const [language, setLanguage] = useState('en')
   const handleSelectBody = useCallback((bodyId) => setSelectedId(bodyId), [])
   const text = copy[language]
 
@@ -142,10 +140,6 @@ function App() {
               </button>
             ))}
           </div>
-
-          <button className="control-button" type="button" onClick={() => setSelectedId('earth')}>
-            {text.backToEarth}
-          </button>
         </div>
       </header>
 
