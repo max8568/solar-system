@@ -3,44 +3,135 @@ import './App.css'
 import { SolarSystemScene } from './SolarSystemScene'
 import { solarBodies, sunInfo } from './solarSystemData'
 
-const speedOptions = [
-  { label: '慢', value: 0.35 },
-  { label: '標準', value: 0.65 },
-  { label: '快', value: 1 },
-]
+const copy = {
+  zh: {
+    languageLabel: 'Language switcher',
+    languageButton: 'English',
+    title: '太陽系探索教室',
+    controls: '動畫控制',
+    pause: '暫停',
+    play: '播放',
+    speed: '公轉速度',
+    backToEarth: '回到地球',
+    stage: '可點選的太陽系模型',
+    scene: '立體太陽系模型',
+    scaleNote: '拖曳可旋轉視角，滾輪可縮放。示意比例經過調整，方便觀察行星與軌道。',
+    facts: {
+      order: '位置',
+      distance: '距離',
+      diameter: '大小',
+      mass: '質量',
+      composition: '組成',
+      rotation: '自轉',
+      revolution: '公轉',
+      temperature: '溫度',
+      moons: '衛星',
+    },
+    sourceNote: '資料參考 NASA Planetary Fact Sheet 與 NASA Solar System。數值以學習用途做簡化。',
+    speedOptions: [
+      { label: '慢', value: 0.2 },
+      { label: '標準', value: 0.35 },
+      { label: '快', value: 1 },
+    ],
+  },
+  en: {
+    languageLabel: 'Language switcher',
+    languageButton: 'Chinese',
+    title: 'Solar System Exploration Classroom',
+    controls: 'Animation controls',
+    pause: 'Pause',
+    play: 'Play',
+    speed: 'Orbital speed',
+    backToEarth: 'Back to Earth',
+    stage: 'Clickable solar system model',
+    scene: '3D solar system model',
+    scaleNote:
+      'Drag to rotate the view and scroll to zoom. The scale is adjusted to make the planets and orbits easier to observe.',
+    facts: {
+      order: 'Position',
+      distance: 'Distance',
+      diameter: 'Size',
+      mass: 'Mass',
+      composition: 'Composition',
+      rotation: 'Rotation',
+      revolution: 'Orbit',
+      temperature: 'Temperature',
+      moons: 'Moons',
+    },
+    sourceNote:
+      'Data references NASA Planetary Fact Sheet and NASA Solar System. Values are simplified for learning.',
+    speedOptions: [
+      { label: 'Slow', value: 0.2 },
+      { label: 'Normal', value: 0.35 },
+      { label: 'Fast', value: 1 },
+    ],
+  },
+}
+
+function localizeBody(body, language) {
+  return {
+    ...body,
+    ...(language === 'en' ? body.en : {}),
+    secondaryName: language === 'zh' ? body.englishName : '',
+  }
+}
 
 function App() {
   const [selectedId, setSelectedId] = useState('earth')
   const [isPlaying, setIsPlaying] = useState(true)
-  const [speed, setSpeed] = useState(0.65)
+  const [speed, setSpeed] = useState(0.35)
+  const [language, setLanguage] = useState('zh')
   const handleSelectBody = useCallback((bodyId) => setSelectedId(bodyId), [])
+  const text = copy[language]
 
   const selectedBody = useMemo(() => {
-    if (selectedId === 'sun') {
-      return sunInfo
-    }
+    const body =
+      selectedId === 'sun'
+        ? sunInfo
+        : solarBodies.find((item) => item.id === selectedId) ?? solarBodies[2]
 
-    return solarBodies.find((body) => body.id === selectedId) ?? solarBodies[2]
-  }, [selectedId])
+    return localizeBody(body, language)
+  }, [language, selectedId])
+
+  const factRows = [
+    ['order', selectedBody.order],
+    ['distance', selectedBody.distance],
+    ['diameter', selectedBody.diameter],
+    ['mass', selectedBody.mass],
+    ['composition', selectedBody.composition],
+    ['rotation', selectedBody.rotation],
+    ['revolution', selectedBody.revolution],
+    ['temperature', selectedBody.temperature],
+    ['moons', selectedBody.moons],
+  ]
 
   return (
-    <main className="app-shell">
+    <main className="app-shell" lang={language === 'zh' ? 'zh-Hant' : 'en'}>
       <header className="app-header">
         <div>
-          <h1>太陽系探索教室</h1>
+          <h1>{text.title}</h1>
         </div>
 
-        <div className="controls" aria-label="動畫控制">
+        <div className="controls" aria-label={text.controls}>
+          <button
+            className="language-button"
+            type="button"
+            aria-label={text.languageLabel}
+            onClick={() => setLanguage((current) => (current === 'zh' ? 'en' : 'zh'))}
+          >
+            {text.languageButton}
+          </button>
+
           <button
             className="control-button"
             type="button"
             onClick={() => setIsPlaying((current) => !current)}
           >
-            {isPlaying ? '暫停' : '播放'}
+            {isPlaying ? text.pause : text.play}
           </button>
 
-          <div className="speed-group" role="group" aria-label="公轉速度">
-            {speedOptions.map((option) => (
+          <div className="speed-group" role="group" aria-label={text.speed}>
+            {text.speedOptions.map((option) => (
               <button
                 className={`speed-button ${speed === option.value ? 'active' : ''}`}
                 type="button"
@@ -53,20 +144,22 @@ function App() {
           </div>
 
           <button className="control-button" type="button" onClick={() => setSelectedId('earth')}>
-            回到地球
+            {text.backToEarth}
           </button>
         </div>
       </header>
 
       <section className="learning-layout">
-        <section className="space-stage" aria-label="可點選的太陽系模型">
-          <div className="scale-note">拖曳可旋轉視角，滾輪可縮放。示意比例經過調整，方便觀察行星與軌道。</div>
+        <section className="space-stage" aria-label={text.stage}>
+          <div className="scale-note">{text.scaleNote}</div>
 
           <SolarSystemScene
             selectedId={selectedId}
             onSelectBody={handleSelectBody}
             isPlaying={isPlaying}
             speed={speed}
+            language={language}
+            ariaLabel={text.scene}
           />
         </section>
 
@@ -74,7 +167,7 @@ function App() {
           <p className="body-type">{selectedBody.type}</p>
           <h2>
             {selectedBody.name}
-            <span>{selectedBody.englishName}</span>
+            {selectedBody.secondaryName && <span>{selectedBody.secondaryName}</span>}
           </h2>
 
           <figure className="body-image-card">
@@ -85,47 +178,15 @@ function App() {
           <p className="kid-fact">{selectedBody.kidFact}</p>
 
           <dl className="facts-grid">
-            <div>
-              <dt>位置</dt>
-              <dd>{selectedBody.order}</dd>
-            </div>
-            <div>
-              <dt>距離</dt>
-              <dd>{selectedBody.distance}</dd>
-            </div>
-            <div>
-              <dt>大小</dt>
-              <dd>{selectedBody.diameter}</dd>
-            </div>
-            <div>
-              <dt>質量</dt>
-              <dd>{selectedBody.mass}</dd>
-            </div>
-            <div>
-              <dt>組成</dt>
-              <dd>{selectedBody.composition}</dd>
-            </div>
-            <div>
-              <dt>自轉</dt>
-              <dd>{selectedBody.rotation}</dd>
-            </div>
-            <div>
-              <dt>公轉</dt>
-              <dd>{selectedBody.revolution}</dd>
-            </div>
-            <div>
-              <dt>溫度</dt>
-              <dd>{selectedBody.temperature}</dd>
-            </div>
-            <div>
-              <dt>衛星</dt>
-              <dd>{selectedBody.moons}</dd>
-            </div>
+            {factRows.map(([key, value]) => (
+              <div key={key}>
+                <dt>{text.facts[key]}</dt>
+                <dd>{value}</dd>
+              </div>
+            ))}
           </dl>
 
-          <div className="source-note">
-            資料參考 NASA Planetary Fact Sheet 與 NASA Solar System。數值以學習用途做簡化。
-          </div>
+          <div className="source-note">{text.sourceNote}</div>
         </aside>
       </section>
     </main>

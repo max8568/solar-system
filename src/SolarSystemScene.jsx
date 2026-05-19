@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
-import { solarBodies } from './solarSystemData'
+import { solarBodies, sunInfo } from './solarSystemData'
 
 const planetColors = {
   mercury: 0x9a8f86,
@@ -78,13 +78,17 @@ function createPlanet(body) {
   return mesh
 }
 
-export function SolarSystemScene({ selectedId, onSelectBody, isPlaying, speed }) {
+function getBodyName(body, language) {
+  return language === 'en' ? body.en?.name ?? body.englishName : body.name
+}
+
+export function SolarSystemScene({ selectedId, onSelectBody, isPlaying, speed, language, ariaLabel }) {
   const mountRef = useRef(null)
-  const stateRef = useRef({ isPlaying, speed, selectedId })
+  const stateRef = useRef({ isPlaying, speed, selectedId, language })
 
   useEffect(() => {
-    stateRef.current = { isPlaying, speed, selectedId }
-  }, [isPlaying, speed, selectedId])
+    stateRef.current = { isPlaying, speed, selectedId, language }
+  }, [isPlaying, language, speed, selectedId])
 
   useEffect(() => {
     const mount = mountRef.current
@@ -174,19 +178,19 @@ export function SolarSystemScene({ selectedId, onSelectBody, isPlaying, speed })
     mount.appendChild(labelContainer)
 
     const labels = new Map()
-    ;[{ id: 'sun', name: '太陽', object: sun, offset: 42 }, ...planetEntries.map(({ body, planet }) => ({
+    ;[{ id: 'sun', body: sunInfo, object: sun, offset: 42 }, ...planetEntries.map(({ body, planet }) => ({
       id: body.id,
-      name: body.name,
+      body,
       object: planet,
       offset: Math.max(body.size / 2 + 5, 14),
     }))].forEach((entry) => {
       const label = document.createElement('button')
       label.type = 'button'
       label.className = 'scene-label'
-      label.textContent = entry.name
+      label.textContent = getBodyName(entry.body, stateRef.current.language)
       label.addEventListener('click', () => onSelectBody(entry.id))
       labelContainer.appendChild(label)
-      labels.set(entry.id, { label, object: entry.object, offset: entry.offset })
+      labels.set(entry.id, { label, object: entry.object, offset: entry.offset, body: entry.body })
     })
 
     const raycaster = new THREE.Raycaster()
@@ -222,9 +226,10 @@ export function SolarSystemScene({ selectedId, onSelectBody, isPlaying, speed })
     let animationId = 0
 
     const updateLabels = () => {
-      labels.forEach(({ label, object, offset }, id) => {
+      labels.forEach(({ label, object, offset, body }, id) => {
         const worldPosition = new THREE.Vector3()
         object.getWorldPosition(worldPosition)
+        label.textContent = getBodyName(body, stateRef.current.language)
         worldPosition.project(camera)
         const x = (worldPosition.x * 0.5 + 0.5) * mount.clientWidth
         const y = (-worldPosition.y * 0.5 + 0.5) * mount.clientHeight - offset
@@ -282,5 +287,5 @@ export function SolarSystemScene({ selectedId, onSelectBody, isPlaying, speed })
     }
   }, [onSelectBody])
 
-  return <div className="three-scene" ref={mountRef} aria-label="立體太陽系模型" />
+  return <div className="three-scene" ref={mountRef} aria-label={ariaLabel} />
 }

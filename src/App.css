@@ -32,6 +32,7 @@ h1 {
   gap: 10px;
 }
 
+.language-button,
 .control-button,
 .speed-button {
   min-height: 40px;
@@ -44,6 +45,14 @@ h1 {
   cursor: pointer;
 }
 
+.language-button {
+  color: #07111f;
+  background: #f8fafc;
+  font-weight: 800;
+}
+
+.language-button:hover,
+.language-button:focus-visible,
 .control-button:hover,
 .speed-button:hover,
 .control-button:focus-visible,
@@ -74,6 +83,7 @@ h1 {
 
 .learning-layout {
   display: grid;
+  align-items: start;
   grid-template-columns: minmax(600px, 1fr) 390px;
   gap: 20px;
   max-width: 1280px;
@@ -288,11 +298,13 @@ h1 {
   }
 
   .controls,
+  .language-button,
   .control-button,
   .speed-group {
     width: 100%;
   }
 
+  .language-button,
   .control-button {
     justify-content: center;
   }
