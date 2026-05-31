@@ -119,6 +119,10 @@ function localizeBody(body, language) {
   }
 }
 
+function scrollToPageTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
 // Top-down schematic of the Earth–Moon tides, complementing the 3D scene.
 function TideDiagram({ text }) {
   const cx = 150
@@ -288,7 +292,10 @@ function App() {
               <button
                 className="back-button"
                 type="button"
-                onClick={() => setView('system')}
+                onClick={() => {
+                  setView('system')
+                  scrollToPageTop()
+                }}
               >
                 {text.backButton}
               </button>
@@ -321,7 +328,10 @@ function App() {
                 <button
                   className="detail-button"
                   type="button"
-                  onClick={() => setView('earthDetail')}
+                  onClick={() => {
+                    setView('earthDetail')
+                    scrollToPageTop()
+                  }}
                 >
                   {text.detailButton}
                 </button>
