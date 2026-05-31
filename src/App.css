@@ -178,6 +178,56 @@ h1 {
   opacity: 1;
 }
 
+.scene-label.tide-callout {
+  border-color: transparent;
+  padding: 1px 6px;
+  font-size: 0.66rem;
+  opacity: 0.95;
+}
+
+.tide-callout.high {
+  color: #07111f;
+  background: #fbbf24;
+}
+
+.tide-callout.low {
+  color: #07111f;
+  background: #7dd3fc;
+}
+
+.tide-callout.observer {
+  color: #fff;
+  background: #ef4444;
+}
+
+.tide-hud {
+  position: absolute;
+  z-index: 6;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 999px;
+  color: #f8fafc;
+  background: rgba(2, 6, 23, 0.72);
+  font-weight: 800;
+  font-size: 1rem;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.tide-hud.high {
+  color: #07111f;
+  background: #fbbf24;
+  border-color: transparent;
+}
+
+.tide-hud.low {
+  color: #e0f2fe;
+  background: rgba(12, 74, 110, 0.85);
+}
+
 .info-panel {
   padding: 24px;
 }
@@ -270,6 +320,107 @@ h1 {
   margin-top: 16px;
   color: #94a3b8;
   font-size: 0.84rem;
+}
+
+.detail-button,
+.back-button {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: #f8fafc;
+  background: rgba(15, 23, 42, 0.76);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.detail-button {
+  color: #07111f;
+  background: #7dd3fc;
+  border-color: transparent;
+  font-weight: 800;
+}
+
+.detail-button:hover,
+.detail-button:focus-visible,
+.back-button:hover,
+.back-button:focus-visible {
+  border-color: #7dd3fc;
+  outline: none;
+}
+
+.tide-diagram-title {
+  margin: 18px 0 8px;
+  color: #7dd3fc;
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.tide-diagram {
+  margin: 0 0 18px;
+  padding: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 8px;
+  background: rgba(2, 6, 23, 0.42);
+}
+
+.tide-diagram svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.tide-diagram figcaption {
+  margin-top: 6px;
+  color: #cbd5e1;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.tide-diagram text {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.tide-diagram-body {
+  fill: #f8fafc;
+}
+
+.tide-diagram-high {
+  fill: #fbbf24;
+}
+
+.tide-diagram-low {
+  fill: #7dd3fc;
+}
+
+.tide-diagram-pull {
+  fill: #fde047;
+}
+
+.tide-diagram-observer {
+  fill: #fca5a5;
+}
+
+.tide-explainer {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tide-explainer li {
+  padding: 12px 14px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-left: 4px solid #7dd3fc;
+  border-radius: 8px;
+  color: #e2e8f0;
+  background: rgba(2, 6, 23, 0.34);
+  line-height: 1.5;
 }
 
 @media (max-width: 1100px) {
