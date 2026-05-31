@@ -352,8 +352,8 @@ export function EarthMoonScene({ isPlaying, speed, earthSpin, language, ariaLabe
     mount.appendChild(hud)
 
     const labelEntries = [
-      { key: 'earth', object: earth, offset: EARTH_RADIUS + 6, occlude: false },
-      { key: 'moon', object: moon, offset: MOON_RADIUS + 6, occlude: true },
+      { key: 'earth', object: earth, offset: EARTH_RADIUS + 68, occlude: false },
+      { key: 'moon', object: moon, offset: MOON_RADIUS + 18, occlude: true },
       { key: 'observer', object: observer, offset: 10, variant: 'observer', occlude: true },
       ...tideAnchors.map((object) => ({
         key: object.userData.tideKey,
