@@ -128,14 +128,25 @@ function TideDiagram({ text }) {
   const cx = 150
   const cy = 110
   const earthR = 34
-  const observerAngle = -35 * (Math.PI / 180)
+  const observerAngle = -48 * (Math.PI / 180)
   const observerX = cx + Math.cos(observerAngle) * earthR
   const observerY = cy + Math.sin(observerAngle) * earthR
   return (
     <figure className="tide-diagram">
       <svg viewBox="0 0 340 220" role="img" aria-label={text.diagramTitle}>
+        <defs>
+          <radialGradient id="tide-ocean-fade" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.46" />
+            <stop offset="60%" stopColor="#38bdf8" stopOpacity="0.36" />
+            <stop offset="86%" stopColor="#38bdf8" stopOpacity="0.16" />
+            <stop offset="100%" stopColor="#38bdf8" stopOpacity="0" />
+          </radialGradient>
+          <marker id="tide-arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="#fde047" />
+          </marker>
+        </defs>
         {/* egg-shaped ocean stretched toward the Moon (to the right) */}
-        <ellipse cx={cx} cy={cy} rx={earthR * 1.75} ry={earthR * 1.12} fill="#4fc3f7" opacity="0.32" />
+        <ellipse cx={cx} cy={cy} rx={earthR * 1.86} ry={earthR * 1.18} fill="url(#tide-ocean-fade)" />
         {/* Earth */}
         <circle cx={cx} cy={cy} r={earthR} fill="#2f80ed" />
         <line x1={cx - earthR} y1={cy} x2={cx + earthR} y2={cy} stroke="#fbbf24" strokeWidth="1.5" opacity="0.85" />
@@ -145,11 +156,6 @@ function TideDiagram({ text }) {
         <text x={observerX} y={observerY - 12} textAnchor="middle" className="tide-diagram-observer">{text.observerLabel}</text>
         {/* Moon + gravity arrow */}
         <line x1={cx + earthR * 1.72} y1={cy + 22} x2={292} y2={cy + 22} stroke="#fde047" strokeWidth="2.5" markerEnd="url(#tide-arrow)" />
-        <defs>
-          <marker id="tide-arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-            <path d="M0,0 L6,3 L0,6 Z" fill="#fde047" />
-          </marker>
-        </defs>
         <circle cx={312} cy={cy} r="14" fill="#b9b6ad" />
         <text x={312} y={cy + 32} textAnchor="middle" className="tide-diagram-body">{text.moonLabel}</text>
         <text x={236} y={cy + 42} textAnchor="middle" className="tide-diagram-pull">{text.moonPull}</text>

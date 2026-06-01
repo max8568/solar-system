@@ -3,8 +3,8 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 
 const EARTH_RADIUS = 42
-const OCEAN_RADIUS = EARTH_RADIUS * 1.2 // mean sea level, comfortably enclosing the Earth
-const TIDE_AMPLITUDE = 0.18 // how strongly the water is pulled toward/away from the Moon
+const OCEAN_RADIUS = EARTH_RADIUS * 1.24 // mean sea level, visibly enclosing the Earth
+const TIDE_AMPLITUDE = 0.22 // how strongly the water is pulled toward/away from the Moon
 const MOON_RADIUS = 12
 const MOON_ORBIT = 170
 
@@ -286,16 +286,42 @@ export function EarthMoonScene({ isPlaying, speed, earthSpin, language, ariaLabe
     const oceanGroup = new THREE.Object3D() // fixed orientation (follows neither Moon nor Earth)
     scene.add(oceanGroup)
 
-    // Deformable translucent surface with a simple solid colour so the tide shape is easier to read.
+    // Deformable translucent surface with view-facing alpha so the ocean edge fades away.
     const oceanGeometry = new THREE.SphereGeometry(OCEAN_RADIUS, 64, 40)
     const oceanRest = Float32Array.from(oceanGeometry.attributes.position.array)
     const ocean = new THREE.Mesh(
       oceanGeometry,
-      new THREE.MeshBasicMaterial({
-        color: 0x38bdf8,
+      new THREE.ShaderMaterial({
+        uniforms: {
+          uColor: { value: new THREE.Color(0x38bdf8) },
+          uOpacity: { value: 0.6 },
+        },
         transparent: true,
-        opacity: 0.42,
         depthWrite: false,
+        vertexShader: `
+          varying vec3 vNormal;
+          varying vec3 vViewDirection;
+
+          void main() {
+            vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+            vNormal = normalize(normalMatrix * normal);
+            vViewDirection = normalize(-mvPosition.xyz);
+            gl_Position = projectionMatrix * mvPosition;
+          }
+        `,
+        fragmentShader: `
+          uniform vec3 uColor;
+          uniform float uOpacity;
+          varying vec3 vNormal;
+          varying vec3 vViewDirection;
+
+          void main() {
+            float facing = abs(dot(normalize(vNormal), normalize(vViewDirection)));
+            float edgeFade = smoothstep(0.04, 0.62, facing);
+            float coreGlow = smoothstep(0.16, 1.0, facing) * 0.18;
+            gl_FragColor = vec4(uColor, (edgeFade * uOpacity) + coreGlow);
+          }
+        `,
       }),
     )
     oceanGroup.add(ocean)
@@ -338,7 +364,13 @@ export function EarthMoonScene({ isPlaying, speed, earthSpin, language, ariaLabe
       new THREE.SphereGeometry(4, 16, 12),
       new THREE.MeshBasicMaterial({ color: 0xff5252 }),
     )
-    observer.position.set(EARTH_RADIUS * 1.02, 0, 0)
+    const observerLatitude = THREE.MathUtils.degToRad(28)
+    const observerRadius = EARTH_RADIUS * 1.02
+    observer.position.set(
+      Math.cos(observerLatitude) * observerRadius,
+      Math.sin(observerLatitude) * observerRadius,
+      0,
+    )
     earth.add(observer)
 
     // HTML label layer (same pattern/classes as SolarSystemScene)
@@ -386,6 +418,10 @@ export function EarthMoonScene({ isPlaying, speed, earthSpin, language, ariaLabe
     const observerPos = new THREE.Vector3()
     const observerDir = new THREE.Vector3()
     const moonDir = new THREE.Vector3()
+    const earthQuaternion = new THREE.Quaternion()
+    const earthAxis = new THREE.Vector3()
+    const observerLongitudeDir = new THREE.Vector3()
+    const moonLongitudeDir = new THREE.Vector3()
     const camPos = new THREE.Vector3()
     const occToCenter = new THREE.Vector3()
     const occRayDir = new THREE.Vector3()
@@ -413,8 +449,13 @@ export function EarthMoonScene({ isPlaying, speed, earthSpin, language, ariaLabe
       observer.getWorldPosition(observerPos)
       observerDir.subVectors(observerPos, earthCenter).normalize()
       moonDir.subVectors(moonWorldPos, earthCenter).normalize()
-      // Near a bulge (aligned with or opposite the Moon) → high tide; perpendicular → low tide
-      const isHigh = Math.abs(observerDir.dot(moonDir)) > Math.cos(THREE.MathUtils.degToRad(45))
+      earth.getWorldQuaternion(earthQuaternion)
+      earthAxis.set(0, 1, 0).applyQuaternion(earthQuaternion).normalize()
+      observerLongitudeDir.copy(observerDir).addScaledVector(earthAxis, -observerDir.dot(earthAxis)).normalize()
+      moonLongitudeDir.copy(moonDir).addScaledVector(earthAxis, -moonDir.dot(earthAxis)).normalize()
+      // Compare longitude around Earth's spin axis, so a northern marker still reaches the tide bulges.
+      const isHigh =
+        Math.abs(observerLongitudeDir.dot(moonLongitudeDir)) > Math.cos(THREE.MathUtils.degToRad(45))
       hud.textContent = getLabel('hudPrefix', lang) + getLabel(isHigh ? 'nowHigh' : 'nowLow', lang)
       hud.classList.toggle('high', isHigh)
       hud.classList.toggle('low', !isHigh)
