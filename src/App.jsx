@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react'
 import './App.css'
 import { SolarSystemScene } from './SolarSystemScene'
 import { EarthMoonScene } from './EarthMoonScene'
+import { LunarEclipseScene } from './LunarEclipseScene'
 import { solarBodies, sunInfo } from './solarSystemData'
 
 const copy = {
@@ -55,6 +56,20 @@ const copy = {
     observerLabel: '觀測點',
     earthLabel: '地球',
     moonLabel: '月球',
+    eclipseDetailButton: '進一步認識：月蝕 ▸',
+    eclipseType: '日—地—月系統',
+    eclipseTitle: '月蝕是怎麼發生的？',
+    eclipseScene: '日地月立體模型',
+    eclipseIntro: '滿月時，如果太陽、地球、月球排成一直線，月球走進地球的影子裡，就發生月蝕。',
+    eclipsePoints: [
+      '太陽照向地球，會在地球背後拉出一條長長的影子。',
+      '月球繞到地球背後、走進這條影子時，照不到陽光，看起來就變暗變紅。',
+      '月蝕只發生在滿月，因為這時月球才在地球背對太陽的那一側。',
+    ],
+    eclipseDiagramTitle: '從側面看（示意圖）',
+    eclipseDiagramCaption: '地球擋住太陽光，在背後拉出影子；月球走進影子裡，就是月蝕。',
+    sunLabel: '太陽',
+    shadowLabel: '地影',
   },
   en: {
     languageLabel: 'Language switcher',
@@ -108,6 +123,21 @@ const copy = {
     observerLabel: 'Marked spot',
     earthLabel: 'Earth',
     moonLabel: 'Moon',
+    eclipseDetailButton: 'Learn more: lunar eclipses ▸',
+    eclipseType: 'Sun–Earth–Moon system',
+    eclipseTitle: 'What causes a lunar eclipse?',
+    eclipseScene: '3D model of the Sun, Earth, and Moon',
+    eclipseIntro:
+      "At full moon, if the Sun, Earth, and Moon line up, the Moon moves into Earth's shadow — that's a lunar eclipse.",
+    eclipsePoints: [
+      'Sunlight hits the Earth and casts a long shadow behind it.',
+      "When the Moon travels into that shadow, sunlight can't reach it, so it turns dark and reddish.",
+      'A lunar eclipse only happens at full moon, when the Moon is on the side of Earth facing away from the Sun.',
+    ],
+    eclipseDiagramTitle: 'Seen from the side',
+    eclipseDiagramCaption: "Earth blocks the sunlight and casts a shadow; when the Moon enters it, an eclipse happens.",
+    sunLabel: 'Sun',
+    shadowLabel: "Earth's shadow",
   },
 }
 
@@ -165,6 +195,39 @@ function TideDiagram({ text }) {
   )
 }
 
+// Side view of the Sun–Earth–Moon alignment during a lunar eclipse, complementing the 3D scene.
+function EclipseDiagram({ text }) {
+  const cy = 110
+  const earthX = 150
+  const earthR = 20
+  return (
+    <figure className="tide-diagram">
+      <svg viewBox="0 0 340 220" role="img" aria-label={text.eclipseDiagramTitle}>
+        {/* Sun on the left */}
+        <circle cx={36} cy={cy} r={26} fill="#fbbf24" />
+        <text x={36} y={cy + 44} textAnchor="middle" className="tide-diagram-body">{text.sunLabel}</text>
+        {/* sunlight rays grazing the Earth, outlining the shadow */}
+        <line x1={44} y1={cy - 25} x2={earthX} y2={cy - earthR} stroke="#fde047" strokeWidth="1.5" opacity="0.8" />
+        <line x1={44} y1={cy + 25} x2={earthX} y2={cy + earthR} stroke="#fde047" strokeWidth="1.5" opacity="0.8" />
+        {/* Earth's shadow: a dark cone tapering away from the Sun */}
+        <polygon
+          points={`${earthX},${cy - earthR} 326,${cy - 9} 326,${cy + 9} ${earthX},${cy + earthR}`}
+          fill="#0f172a"
+          opacity="0.78"
+        />
+        <text x={238} y={cy - 22} textAnchor="middle" className="tide-diagram-low">{text.shadowLabel}</text>
+        {/* Earth */}
+        <circle cx={earthX} cy={cy} r={earthR} fill="#2f80ed" />
+        <text x={earthX} y={cy + 40} textAnchor="middle" className="tide-diagram-body">{text.earthLabel}</text>
+        {/* eclipsed Moon inside the shadow */}
+        <circle cx={278} cy={cy} r={9} fill="#9a3412" stroke="#f8fafc" strokeWidth="0.8" opacity="0.95" />
+        <text x={278} y={cy + 30} textAnchor="middle" className="tide-diagram-body">{text.moonLabel}</text>
+      </svg>
+      <figcaption>{text.eclipseDiagramCaption}</figcaption>
+    </figure>
+  )
+}
+
 function App() {
   const [selectedId, setSelectedId] = useState('earth')
   const [view, setView] = useState('system')
@@ -175,6 +238,7 @@ function App() {
   const handleSelectBody = useCallback((bodyId) => setSelectedId(bodyId), [])
   const text = copy[language]
   const isEarthDetail = view === 'earthDetail'
+  const isLunarEclipse = view === 'lunarEclipse'
 
   const selectedBody = useMemo(() => {
     const body =
@@ -250,7 +314,7 @@ function App() {
 
       <section className="learning-layout">
         <section className="space-stage" aria-label={text.stage}>
-          {!isEarthDetail && <div className="scale-note">{text.scaleNote}</div>}
+          {view === 'system' && <div className="scale-note">{text.scaleNote}</div>}
 
           {isEarthDetail ? (
             <EarthMoonScene
@@ -259,6 +323,13 @@ function App() {
               earthSpin={earthSpin}
               language={language}
               ariaLabel={text.earthMoonScene}
+            />
+          ) : isLunarEclipse ? (
+            <LunarEclipseScene
+              isPlaying={isPlaying}
+              speed={speed}
+              language={language}
+              ariaLabel={text.eclipseScene}
             />
           ) : (
             <SolarSystemScene
@@ -300,6 +371,33 @@ function App() {
                 {text.backButton}
               </button>
             </>
+          ) : isLunarEclipse ? (
+            <>
+              <p className="body-type">{text.eclipseType}</p>
+              <h2>{text.eclipseTitle}</h2>
+
+              <p className="kid-fact">{text.eclipseIntro}</p>
+
+              <p className="tide-diagram-title">{text.eclipseDiagramTitle}</p>
+              <EclipseDiagram text={text} />
+
+              <ul className="tide-explainer">
+                {text.eclipsePoints.map((point) => (
+                  <li key={point}>{point}</li>
+                ))}
+              </ul>
+
+              <button
+                className="back-button"
+                type="button"
+                onClick={() => {
+                  setView('system')
+                  scrollToPageTop()
+                }}
+              >
+                {text.backButton}
+              </button>
+            </>
           ) : (
             <>
               <p className="body-type">{selectedBody.type}</p>
@@ -325,16 +423,28 @@ function App() {
               </dl>
 
               {selectedId === 'earth' && (
-                <button
-                  className="detail-button"
-                  type="button"
-                  onClick={() => {
-                    setView('earthDetail')
-                    scrollToPageTop()
-                  }}
-                >
-                  {text.detailButton}
-                </button>
+                <>
+                  <button
+                    className="detail-button"
+                    type="button"
+                    onClick={() => {
+                      setView('earthDetail')
+                      scrollToPageTop()
+                    }}
+                  >
+                    {text.detailButton}
+                  </button>
+                  <button
+                    className="detail-button"
+                    type="button"
+                    onClick={() => {
+                      setView('lunarEclipse')
+                      scrollToPageTop()
+                    }}
+                  >
+                    {text.eclipseDetailButton}
+                  </button>
+                </>
               )}
 
               <div className="source-note">{text.sourceNote}</div>
